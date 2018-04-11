@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bitcoin Alert</title>
+  <meta name="description" content="Bitcoin Alert">
+  <meta name="author" content="Nathan Jordan">
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <style type="text/css">
+    audio {
+      display: none;
+    }
+    body {
+      background-image: url('https://wallpapercave.com/wp/mbfPHPK.jpg');
+      background-size: 100% auto;
+      color: white;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      padding: 1em;
+    }
+    h1 {
+      font-size: 6rem;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const currentPriceURL = "https://api.coindesk.com/v1/bpi/currentprice.json"
+    const updateInterval = 10000; // 10 seconds
+    const threshold = 6800; // threshold at which it is not worth it to mine
+    var currentPrice;
+    var belowThreshold = true;
+
+    $(document).ready(function() {
+
+      // request for the current price of bitcoin
+      var updatePrice = function() {
+        $.getJSON(currentPriceURL, function( data ) {
+          currentPrice = data.bpi.USD.rate_float;
+          updatePriceDisplay(currentPrice);
+          console.log(currentPrice);
+          if (belowThreshold && currentPrice > threshold) {
+            belowThreshold = false;
+            playSong();
+            return;
+          }
+          if (!belowThreshold && currentPrice < threshold) {
+            belowThreshold = true;
+            playSong();
+            return;
+          }
+        });
+      };
+
+      var updatePriceDisplay = function(price) {
+        $("#price").html(formatUSD(price));
+      };
+
+      var playSong = function() {
+        $("#you_suffer").trigger("play");
+      };
+
+      var formatUSD = function(num) {
+        return "$" + num.toString();
+      };
+
+      // update price and watch
+      updatePrice();
+      setInterval(updatePrice, updateInterval);
+
+      // display threshold
+      $("#threshold").html(formatUSD(threshold));
+
+    }) // document.ready
+  </script>
+
+  <h1>BTC Price: <span id="price">?</span></h1>
+  <h1>Threshold: <span id="threshold">?</span></h1>
+
+  <audio id="you_suffer" controls="controls">
+    <source src="you_suffer.mp3" type="audio/mpeg"/>
+  </audio>
+
+</body>
+</html>
